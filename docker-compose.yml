@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: bot_sasha
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    networks:
+      - bot-network
+    ports:
+      - "3000:3000" 
+    command: npm run start
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: redis_sasha
+    restart: always
+    env_file:
+      - .env  
+    command: redis-server --requirepass ${REDIS_PASSWORD}  
+    networks:
+      - bot-network
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+
+networks:
+  bot-network:
+    driver: bridge

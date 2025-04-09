@@ -1,0 +1,1 @@
+export type TNextFunction = () => Promise<void>
