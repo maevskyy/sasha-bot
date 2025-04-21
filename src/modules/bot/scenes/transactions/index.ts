@@ -1,4 +1,5 @@
 export * from './transactions.scene'
 export * from './addTransaction.scene'
 export * from './deleteTransaction.scene'
-export * from './editTransaction.scene'
+// export * from './editTransaction.scene'
+export * from './edit-transaction/index'

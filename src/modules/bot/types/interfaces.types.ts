@@ -20,6 +20,12 @@ interface MySession extends Scenes.SceneSession<MyWizardSession> {
     originCard: IDBCard;
     recieverCard: string;
   };
+  editTransaction: {
+    amount: string;
+    postBalance: string;
+    originCard: IDBCard;
+    recieverCard: string;
+  };
   transactions: IDbTransaction[];
   paginationPage: number;
 }
@@ -28,4 +34,5 @@ export interface IMyContext extends Context {
   scene: Scenes.SceneContextScene<IMyContext, MyWizardSession>;
   wizard: WizardContextWizard<IMyContext>;
   session: MySession;
+
 }

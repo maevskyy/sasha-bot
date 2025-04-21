@@ -1,10 +1,25 @@
 import { bot } from "./modules";
 import { logger } from "./common";
-
+import { supabasePing, redisPing } from "./modules/db";
 
 export async function boot() {
   try {
-    logger.info("Starting bot...");
+    logger.info("Pinging Supabase...");
+
+    const supabaseHealthy = await supabasePing();
+    if (!supabaseHealthy) {
+      logger.error("Supabase ping failed. Aborting launch.");
+      process.exit(1);
+    }
+
+    logger.info("Pinging Redis...");
+    const redisHealthy = await redisPing();
+    if (!redisHealthy) {
+      logger.error("Redis ping failed. Aborting launch.");
+      process.exit(1);
+    }
+
+    logger.info("All services healthy. Starting bot...");
     await bot.launch();
     logger.info("Bot is running...");
 
@@ -25,4 +40,4 @@ export async function boot() {
   }
 }
 
-boot()
+boot();

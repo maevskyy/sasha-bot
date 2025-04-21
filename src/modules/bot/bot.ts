@@ -9,6 +9,10 @@ import { message } from "telegraf/filters";
 const bot = new Telegraf<IMyContext>(internalConfig.bot_token);
 const botScenes = new Scenes.Stage<IMyContext>(scenes);
 
+bot.command("restart", async (ctx) => {
+  return ctx.reply("Do a restart command");
+});
+
 // ============ MIDDLEWARES ============
 
 botScenes.use(errorHandler, loggingAndProcessingTime)
@@ -29,10 +33,6 @@ bot.start(async (ctx) => {
   } else {
     return ctx.scene.enter(EBotScenes.MENU);
   }
-});
-
-bot.command("restart", async (ctx) => {
-  return ctx.reply("Do a restart command");
 });
 
 bot.on(message("text"), async (ctx) => {

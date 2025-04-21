@@ -12,6 +12,11 @@ import { redisClient } from "./redis.db";
 const { url, key } = internalConfig.db.supabase;
 const client = createClient(url, key);
 
+const supabasePing = async () => {
+  const { error } = await client.rpc("ping");
+  return !error;
+};
+
 const getUserByChatId = async (chatId: number): Promise<null | IDBUser> => {
   const cacheKey = `user:${chatId}`;
   const cachedUser = await redisClient.get(cacheKey);
@@ -38,21 +43,7 @@ const getUserByChatId = async (chatId: number): Promise<null | IDBUser> => {
 
   return user;
 };
-const getCardsByUserId = async (
-  chatId: number,
-  updateCache: boolean = false
-): Promise<null | IDBCard[]> => {
-  const cacheKey = `cards:${chatId}`;
-
-  if (!updateCache) {
-    const cachedCards = await redisClient.get(cacheKey);
-    if (cachedCards) {
-      return JSON.parse(cachedCards);
-    }
-  } else {
-    await redisClient.del(cacheKey);
-  }
-
+const getCardsByUserId = async (chatId: number): Promise<null | IDBCard[]> => {
   const { data, error } = await client
     .from(EDBTables.CARDS)
     .select("*")
@@ -64,10 +55,6 @@ const getCardsByUserId = async (
   }
   if (!data || data.length === 0) {
     return null;
-  }
-
-  if (data && data.length !== 0) {
-    await redisClient.set(cacheKey, JSON.stringify(data), "EX", 3600);
   }
 
   return data;
@@ -86,8 +73,6 @@ const createCard = async (cardInfo: IDBCard): Promise<boolean> => {
     logger.error(`Error during createCard: ${error}`);
     return false;
   }
-
-  await getCardsByUserId(cardInfo.user_id, true);
 
   return true;
 };
@@ -110,8 +95,6 @@ const updateCard = async (cardInfo: IDBCard): Promise<boolean> => {
     return false;
   }
 
-  await getCardsByUserId(cardInfo.user_id, true);
-
   return true;
 };
 
@@ -129,26 +112,12 @@ const deleteCardByUserAndName = async (
     return false;
   }
 
-  await getCardsByUserId(Number(userId), true);
-
   return true;
 };
 
 const getTransactionsByUserId = async (
-  chatId: number,
-  updateCache: boolean = false
+  chatId: number
 ): Promise<null | IDbTransaction[]> => {
-  const cacheKey = `transactions:${chatId}`;
-
-  if (!updateCache) {
-    const cachedTransactions = await redisClient.get(cacheKey);
-    if (cachedTransactions) {
-      return JSON.parse(cachedTransactions);
-    }
-  } else {
-    await redisClient.del(cacheKey);
-  }
-
   const { data, error } = await client
     .from(EDBTables.TRANSACTIONS)
     .select("*")
@@ -162,8 +131,46 @@ const getTransactionsByUserId = async (
     return null;
   }
 
-  if (data && data.length !== 0) {
-    await redisClient.set(cacheKey, JSON.stringify(data), "EX", 3600);
+  return data;
+};
+
+const getTransactionsByCardId = async (
+  card_id: number
+): Promise<null | IDbTransaction[]> => {
+  const { data, error } = await client
+    // .from(EDBTables.TRANSACTIONS)
+    // .select("*")
+    // .eq("card_id", card_id);
+    .from(EDBTables.TRANSACTIONS)
+    .select("*, card(name)") // ← тут JOIN
+    .eq("card_id", card_id);
+
+  if (error) {
+    logger.error(`Error during getTransactionsByCardId: ${error}`);
+    return null;
+  }
+  if (!data || data.length === 0) {
+    return null;
+  }
+
+  return data;
+};
+
+const getTransactionById = async (
+  transaction_id: number
+): Promise<IDbTransaction | null> => {
+  const { data, error } = await client
+    .from(EDBTables.TRANSACTIONS)
+    .select("*")
+    .eq("id", transaction_id)
+    .single();
+
+  if (error) {
+    logger.error(`Error during getTransactionById: ${error}`);
+    return null;
+  }
+  if (!data || data.length === 0) {
+    return null;
   }
 
   return data;
@@ -180,8 +187,6 @@ const createTransaction = async (
     return false;
   }
 
-  await getTransactionsByUserId(transaction.user_id, true);
-
   return true;
 };
 
@@ -191,38 +196,24 @@ const deleteTransactionById = async (
   card_id: number,
   amount: string
 ): Promise<boolean> => {
-  const { error } = await client
-    .from(EDBTables.TRANSACTIONS)
-    .delete()
-    .eq("user_id", user_id)
-    .eq("id", transaction_id);
+  const { data, error } = await client.rpc(
+    "delete_transaction_and_update_balance",
+    {
+      p_user_id: user_id,
+      p_transaction_id: transaction_id,
+      p_card_id: card_id,
+      p_amount: amount,
+    }
+  );
+
   if (error) {
-    logger.error(`Error during deleteTransactionById: ${error}`);
+    logger.error(
+      `Failed to delete transaction and update balance: ${error.message}`
+    );
     return false;
   }
 
-  const { data: cardData, error: cardError } = await client
-    .from(EDBTables.CARDS)
-    .select("*")
-    .eq("user_id", user_id)
-    .eq("id", card_id);
-
-  if (cardError) {
-    logger.error(`Error during deleteTransactionById: ${error}`);
-    return false;
-  }
-
-  const typesCardData = cardData[0] as IDBCard
-  
-  await updateCard({
-    ...typesCardData,
-    balance: String(Number(typesCardData.balance) + Number(amount))
-  })
-
-  await getCardsByUserId(user_id, true)
-  await getTransactionsByUserId(user_id, true);
-
-  return true;
+  return data;
 };
 
 export {
@@ -234,4 +225,7 @@ export {
   createTransaction,
   getTransactionsByUserId,
   deleteTransactionById,
+  getTransactionsByCardId,
+  getTransactionById,
+  supabasePing,
 };

@@ -9,18 +9,24 @@ const redisClient = new Redis({
   password,
 });
 
-// const session = new RedisSession({
-//   store: {
-//     client: redisClient,
-//   },
-//   // ttl: 86400,  24 hours
-//   ttl: 864
-// });
-
 redisClient.on("error", (err) => {
   logger.error("Redis error", err);
   throw new Error("Redis erro");
 });
+
+const redisPing = async (): Promise<boolean> => {
+  try {
+    const response = await redisClient.ping();
+    if (response === "PONG") {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    logger.error("Redis ping failed:", error);
+    return false;
+  }
+};
 
 const isSessionValid = async (chatId: number) => {
   try {
@@ -42,4 +48,4 @@ const setSession = async (chatId: number) => {
   }
 };
 
-export { isSessionValid, redisClient, setSession };
+export { isSessionValid, redisClient, setSession, redisPing };

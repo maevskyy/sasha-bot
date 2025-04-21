@@ -1,4 +1,4 @@
-import { menuScene } from "./main/menu.scene";
+import { menuScene } from "./main";
 import { authScene } from "./auth/auth.scene";
 import {
   settingsScene,
@@ -13,6 +13,8 @@ import {
   editTransactionScene
 } from "./transactions";
 
+import { statisticScene } from "./staistic";
+
 export const scenes = [
   authScene,
   menuScene,
@@ -23,5 +25,6 @@ export const scenes = [
   transactionsScene,
   addTransactionScene,
   deleteTransactionScene,
-  editTransactionScene
+  editTransactionScene,
+  statisticScene
 ];
