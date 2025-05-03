@@ -137,13 +137,16 @@ const getTransactionsByUserId = async (
 const getTransactionsByCardId = async (
   card_id: number
 ): Promise<null | IDbTransaction[]> => {
+  console.log(card_id, 'this is card_id before db')
   const { data, error } = await client
     // .from(EDBTables.TRANSACTIONS)
     // .select("*")
     // .eq("card_id", card_id);
     .from(EDBTables.TRANSACTIONS)
-    .select("*, card(name)") // ← тут JOIN
+    .select("*, cards(id, name, created_at)")
     .eq("card_id", card_id);
+
+  console.log(data, 'this is data in the db query')
 
   if (error) {
     logger.error(`Error during getTransactionsByCardId: ${error}`);

@@ -24,4 +24,8 @@ export interface IDbTransaction {
   post_balance: string;
   reciever_card: string;
   created_at?: string;
+  cards?: {
+    id: number,
+    name: string
+  }
 }

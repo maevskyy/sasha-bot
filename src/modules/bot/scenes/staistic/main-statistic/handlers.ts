@@ -27,7 +27,7 @@ const mainActionHandler = async (ctx: IMyContext) => {
   const transactionByCard = await getTransactionsByCardId(card);
   if (!transactionByCard) return ctx.reply("По цій картці немає транзакцій");
   const preparedTransactions = prepareTransactionInfo(transactionByCard);
-  return ctx.reply(cardStatisticText(preparedTransactions, "somecard"));
+  return ctx.reply(cardStatisticText(preparedTransactions, preparedTransactions.cardName));
 };
 
 const selectedCardStep = new Composer<IMyContext>();

@@ -14,6 +14,6 @@ const statisticScene = new Scenes.WizardScene<IMyContext>(
 
 statisticScene.enter(enterHandler);
 statisticScene.hears("В меню ⬅", mainHearHandler);
-statisticScene.action(/^statistic_card_\d+_(.+)+_(.+)$/, mainActionHandler);
+statisticScene.action(/^statistic_card_\d+_(.+)$/, mainActionHandler);
 
 export { statisticScene };

@@ -1,4 +1,5 @@
 export interface IPreparedTransaction {
+  cardName?: string;
   totalAmount: number;
   totalQty: number;
   dayAmount: number;

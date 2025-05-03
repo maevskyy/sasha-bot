@@ -1,5 +1,12 @@
 import { InlineKeyboardButton } from "telegraf/typings/core/types/typegram";
 import { IDbTransaction } from "../../../../../common";
+import { keyboard } from "telegraf/typings/markup";
+
+const uiHears = {
+  changeOrAddPhoto: 'Змінити або додати фото',
+  saveChanges: 'Зберегти зміни ✅',
+  cancelChanges: 'Відмінити редагування 🟥'
+}
 
 const createCancelEditKeyboard = () => ({
   reply_markup: {
@@ -71,8 +78,26 @@ const formatTransactionsForPagination = (
     .join("\n\n");
 };
 
+const editTransactionKeyboard = () => {
+
+  return {
+    reply_markup:
+    {
+      keyboard:
+        [
+          [uiHears.changeOrAddPhoto],
+          [uiHears.saveChanges, uiHears.cancelChanges]
+        ],
+      one_time_keyboard: false,
+      resize_keyboard: true
+    }
+  }
+}
+
 export {
   formatTransactionsForPagination,
   createCancelEditKeyboard,
   createTransactionKeyboard,
+  editTransactionKeyboard,
+  uiHears
 };

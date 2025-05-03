@@ -1,6 +1,8 @@
 import { EBotScenes, IMyContext } from "../../../types";
 import { pagination } from "./logic";
 import { getTransactionById } from "../../../../db";
+import { Composer } from "telegraf";
+import { editTransactionKeyboard, uiHears, } from "./ui";
 
 export const onCancelEdit = async (ctx: IMyContext) => {
   await ctx.scene.leave();
@@ -41,7 +43,14 @@ export const onSelectTransaction = async (ctx: IMyContext) => {
   const transaction = await getTransactionById(transactionId);
   if (!transaction) return ctx.reply("Такої транзакції не існує");
 
+  console.log(transactionId, cardId, amount)
   // Тут логика следующего шага будет
   await ctx.reply("Редагування транзакції...");
+  await ctx.reply('Виберіть що ви будете змінювати', editTransactionKeyboard())
   return ctx.wizard.next();
 };
+
+const editTransaction = new Composer<IMyContext>()
+// editTransaction.hears(uiHears.saveChanges)
+// editTransaction.hears(uiHears.cancelChanges)
+// editTransaction.hears(uiHears.changeOrAddPhoto)

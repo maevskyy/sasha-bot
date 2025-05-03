@@ -1,4 +1,4 @@
-import { Scenes } from "telegraf";
+import { Composer, Scenes } from "telegraf";
 import { EBotScenes, IMyContext } from "../../../types";
 import { enterEditTransaction } from "./enter";
 import {
@@ -8,6 +8,8 @@ import {
   onQtyPage,
   onSelectTransaction,
 } from "./handlers";
+
+const editTransaction = new Composer<IMyContext>()
 
 const editTransactionScene = new Scenes.WizardScene<IMyContext>(
   EBotScenes.EDITTRANSACTION,
