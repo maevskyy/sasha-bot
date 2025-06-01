@@ -9,8 +9,6 @@ import {
   onSelectTransaction,
 } from "./handlers";
 
-const editTransaction = new Composer<IMyContext>()
-
 const editTransactionScene = new Scenes.WizardScene<IMyContext>(
   EBotScenes.EDITTRANSACTION,
   onPrevPage,
